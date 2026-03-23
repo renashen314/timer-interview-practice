@@ -1,62 +1,52 @@
 import { useState, useRef, useEffect } from "react";
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = (seconds % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
-
-const FIVE_MINUTES = 5 * 60;
-
 function App() {
-  const [timeLeft, setTimeLeft] = useState(() => {
-    return FIVE_MINUTES;
-  });
-  const [isRunning, setIsRunning] = useState(false);
+  const FIVE_MINUTES = new Date(0, 0, 0, 0, 5);
+
+  const [timeLeft, setTimeLeft] = useState(FIVE_MINUTES);
+
+  const formatedTime = Intl.DateTimeFormat("en-US", {
+    minute: "numeric",
+    second: "numeric",
+  }).format(timeLeft);
 
   const interval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    if (isRunning && interval.current == null) {
-      interval.current = setInterval(() => {
-        setTimeLeft((p) => {
-          if (p <= 1) {
-            clearInterval(interval.current!);
-            interval.current = null;
-            setIsRunning(false);
-            return 0;
-          }
-          return p - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (interval.current !== null) {
-        clearInterval(interval.current);
-        interval.current = null;
-      }
-    };
-  }, [timeLeft, isRunning]);
-
   function startTimer() {
-    setIsRunning(true);
+    if (interval.current !== null) return;
+
+    interval.current = window.setInterval(() => {
+      setTimeLeft(
+        (prevTimeRemaining) => new Date(prevTimeRemaining.getTime() - 1000),
+      );
+    }, 1000);
   }
 
   function stopTimer() {
-    setIsRunning(false);
+    if (interval.current == null) return;
+    clearInterval(interval.current);
+    interval.current = null;
   }
 
   function resetTimer() {
-    setIsRunning(false);
-    clearInterval(interval.current!);
+    if (interval.current !== null) {
+      clearInterval(interval.current);
+    }
     setTimeLeft(FIVE_MINUTES);
+    interval.current = null;
   }
+
+  useEffect(() => {
+    return () => {
+      if (interval.current !== null) {
+        clearInterval(interval.current);
+      }
+    };
+  }, []);
 
   return (
     <>
-      <div>{formatTime(timeLeft)}</div>
+      <div>{formatedTime}</div>
       <div>
         <button onClick={startTimer}>Start</button>
         <button onClick={stopTimer}>Stop</button>
