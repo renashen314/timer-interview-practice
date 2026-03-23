@@ -55,14 +55,31 @@ function App() {
   }
 
   return (
-    <>
-      <div>{formatTime(timeLeft)}</div>
-      <div>
-        <button onClick={startTimer}>Start</button>
-        <button onClick={stopTimer}>Stop</button>
-        <button onClick={resetTimer}>Reset</button>
+    <div className="min-h-screen bg-gray-200 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-8">
+        <div className="text-6xl font-semibold">{formatTime(timeLeft)}</div>
+        <div className="flex gap-4">
+          <button
+            onClick={startTimer}
+            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer"
+          >
+            Start
+          </button>
+          <button
+            onClick={stopTimer}
+            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer"
+          >
+            Stop
+          </button>
+          <button
+            onClick={resetTimer}
+            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer"
+          >
+            Reset
+          </button>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 
