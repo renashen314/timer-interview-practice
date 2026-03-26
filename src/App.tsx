@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -11,46 +11,38 @@ function formatTime(seconds: number): string {
 const FIVE_MINUTES = 5 * 60;
 
 function App() {
-  const [timeLeft, setTimeLeft] = useState(() => {
-    return FIVE_MINUTES;
-  });
+  const [timeLeft, setTimeLeft] = useState(FIVE_MINUTES);
   const [isRunning, setIsRunning] = useState(false);
 
-  const interval = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (isRunning && interval.current == null) {
-      interval.current = setInterval(() => {
-        setTimeLeft((p) => {
-          if (p <= 1) {
-            clearInterval(interval.current!);
-            interval.current = null;
-            setIsRunning(false);
-            return 0;
-          }
-          return p - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (interval.current !== null) {
-        clearInterval(interval.current);
-        interval.current = null;
-      }
-    };
-  }, [timeLeft, isRunning]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   function startTimer() {
+    if (isRunning) return;
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((p) => {
+        if (p <= 1) {
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+          setIsRunning(false);
+          return 0;
+        }
+        return p - 1;
+      });
+    }, 1000);
     setIsRunning(true);
   }
 
   function stopTimer() {
+    if (!isRunning) return;
     setIsRunning(false);
+    clearInterval(intervalRef.current!);
   }
 
   function resetTimer() {
+    if (intervalRef.current === null) return;
     setIsRunning(false);
-    clearInterval(interval.current!);
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
     setTimeLeft(FIVE_MINUTES);
   }
 
@@ -61,19 +53,21 @@ function App() {
         <div className="flex gap-4">
           <button
             onClick={startTimer}
-            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer"
+            disabled={isRunning}
+            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             Start
           </button>
           <button
             onClick={stopTimer}
-            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer"
+            disabled={!isRunning}
+            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             Stop
           </button>
           <button
             onClick={resetTimer}
-            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer"
+            className="px-6 py-2 rounded-lg bg-white border border-gray-600 font-medium hover:bg-blue-300 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             Reset
           </button>
